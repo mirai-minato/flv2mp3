@@ -19,35 +19,33 @@ function headerCheck(data) {
 fs.readFile(flvPath, function(err, data) {
     if (err) return console.error(err);
     var pos = 13;
-    if (headerCheck(data)) {
-        console.log('flv file.');
-        var length = data.length;
-        console.log('length : %d', length);
-        var type;
-        while (pos !== length) {
-            switch (data[pos]) {
-                case META: //meta
-                case VIDEO: //video
-                case AUDIO: //audio
-                    type = data[pos];
-                    pos++;
-                    var chunkSize = parseInt(data.slice(pos, pos + 3).toString('hex'), 16);
-                    pos += 10; // data size + timestamp + space
-                    var isMp3 = (data[pos] & 0xf0) >> 4 === 2;
-                    if (type === AUDIO && isMp3) {
-                        var buf = data.slice(pos + 1, pos + chunkSize);
-                        mp3Stream.write(buf);
-                    }
-                    console.log('progress : %d%', (Math.round((pos+chunkSize) / length * 1000) / 10));
-                    pos += chunkSize;
-                    pos += 4; //footer
-                    break;
-            }
-        }
-        mp3Stream.end(function() {
-            console.log('finished.');
-        });
-    } else {
+    if (!headerCheck(data))
         throw new Error('This file is not flv format.');
+    console.log('flv file.');
+    var length = data.length;
+    console.log('length : %d', length);
+    var type;
+    while (pos !== length) {
+        switch (data[pos]) {
+            case META: //meta
+            case VIDEO: //video
+            case AUDIO: //audio
+                type = data[pos];
+                pos++;
+                var chunkSize = parseInt(data.slice(pos, pos + 3).toString('hex'), 16);
+                pos += 10; // data size + timestamp + space
+                var isMp3 = (data[pos] & 0xf0) >> 4 === 2;
+                if (type === AUDIO && isMp3) {
+                    var buf = data.slice(pos + 1, pos + chunkSize);
+                    mp3Stream.write(buf);
+                }
+                console.log('progress : %d%', (Math.round((pos + chunkSize) / length * 1000) / 10));
+                pos += chunkSize;
+                pos += 4; //footer
+                break;
+        }
     }
+    mp3Stream.end(function() {
+        console.log('finished.');
+    });
 });
