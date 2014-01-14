@@ -1,7 +1,5 @@
 var fs = require('fs'),
-    path = require('path'),
-    _ = require('underscore'),
-    util = require('util');
+    path = require('path');
 
 var args = process.argv.slice(2);
 var flvPath = args[0];
